@@ -3,3 +3,10 @@
 Бизнес обоснование
 Возможное применение - ритеэл и общепита.
 Модель получает данные с камер наблюдения и в случае если в очереди больше 2х человек направляет сообщение в телеграмм
+
+Техническая часть
+pip install opencv-python
+pip install psycopg2-binary
+pip install requests
+pip install telebot
+pip install python-telegram-bot
