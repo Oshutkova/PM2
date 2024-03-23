@@ -4,6 +4,7 @@ import telebot
 import numpy as np
 import psycopg2
 from datetime import datetime
+from datetime import time as dt_time
 import time
 import requests
 import shutil
@@ -27,6 +28,8 @@ class Kamera_class:
     id = 0
     name = ''
     url = ''
+    active_st = dt_time(hour=0, minute=0, second=1)  # начало действия
+    active_end = dt_time(hour=0, minute=0, second=1)  # окончание действия
     usl_send_less = 0   # сообщение уйдёт если значение будет меньше заданного
     usl_send_more = 0   # сообщение уйдёт если значение будет больше заданного
     usl_change_min = 0  # ухудшение ситуации на величину
@@ -37,14 +40,14 @@ class Kamera_class:
     file_name = ''      # имя загруженного файла с картинкой
     file_name_obr = ''  # имя обработанного фала (расчерчены люди)
     # условия на превышение
-    last_send_more_usl_dt = datetime.now()   # дата/вр посл сообщ по условиям
+    last_send_more_usl_dt = datetime(1900, 1, 1)   # посл сообщ по условиям
     last_send_more_usl_cnt = 0   # количество людей в последнем сообщении
-    last_send_more_norm_dt = datetime.now()  # дата/вр посл сообщ по нормал
+    last_send_more_norm_dt = datetime(1900, 1, 1)  # посл сообщ по нормал
     last_send_more_norm_cnt = 0  # кол-во лиц в последнем сообщении по нормал
     # условия на снижение
-    last_send_less_usl_dt = datetime.now()   # дата/вр посл сообщ по условиям
+    last_send_less_usl_dt = datetime(1900, 1, 1)   # посл сообщ по условиям
     last_send_less_usl_cnt = 0   # количество людей в последнем сообщении
-    last_send_less_norm_dt = datetime.now()  # дата/вр посл сообщ по нормал
+    last_send_less_norm_dt = datetime(1900, 1, 1)  # посл сообщ по нормал
     last_send_less_norm_cnt = 0  # кол-во лиц в последнем сообщении по нормал
     # Создать сообщения для услолвия превышения:
     b_add_mess_usl_more = 0       # создать сообщение для условия превышения
@@ -181,7 +184,9 @@ def get_spisok_kamer(conn):
     kameras = []
     cur = conn.cursor()
     sql = """
-        select C.id, C.name, C.url, C.usl_send_less, C.usl_send_more,
+        select C.id, C.name, C.url,
+               C.active_st, C.active_end,
+               C.usl_send_less, C.usl_send_more,
                C.usl_change_min, C.usl_norm_less, C.usl_norm_more,
                t_usl_more_last.date_time last_send_more_usl_dt,
                t_usl_more_last.cnt_people last_send_more_usl_cnt,
@@ -234,65 +239,73 @@ def get_spisok_kamer(conn):
         kamera.name = row[1]
         kamera.url = row[2]
         if row[3] is not None:
-            kamera.usl_send_less = row[3]
+            kamera.active_st = row[3]
+        else:
+            kamera.active_st = dt_time(hour=0, minute=0, second=0)
+        if row[4] is not None:
+            kamera.active_end = row[4]
+        else:
+            kamera.active_end = dt_time(hour=0, minute=0, second=0)
+        if row[5] is not None:
+            kamera.usl_send_less = row[5]
         else:
             kamera.usl_send_less = -1
-        if row[4] is not None:
-            kamera.usl_send_more = row[4]
+        if row[6] is not None:
+            kamera.usl_send_more = row[6]
         else:
             kamera.usl_send_more = -1
-        if row[5] is not None:
-            kamera.usl_change_min = row[5]
+        if row[7] is not None:
+            kamera.usl_change_min = row[7]
         else:
             kamera.usl_change_min = -1
 
-        if row[6] is not None:
-            kamera.usl_norm_less = row[6]
+        if row[8] is not None:
+            kamera.usl_norm_less = row[8]
         else:
             kamera.usl_norm_less = -1
 
-        if row[7] is not None:
-            kamera.usl_norm_more = row[7]
+        if row[9] is not None:
+            kamera.usl_norm_more = row[9]
         else:
             kamera.usl_norm_more = -1
 
-        if row[8] is not None:
-            kamera.last_send_more_usl_dt = row[8]
+        if row[10] is not None:
+            kamera.last_send_more_usl_dt = row[10]
         else:
             kamera.last_send_more_usl_dt = datetime(1900, 1, 1)
 
-        if row[9] is not None:
-            kamera.last_send_more_usl_cnt = row[9]
+        if row[11] is not None:
+            kamera.last_send_more_usl_cnt = row[11]
         else:
             kamera.last_send_more_usl_cnt = -1
 
-        if row[10] is not None:
-            kamera.last_send_more_norm_dt = row[10]
+        if row[12] is not None:
+            kamera.last_send_more_norm_dt = row[12]
         else:
             kamera.last_send_more_norm_dt = datetime(1900, 1, 1)
 
-        if row[11] is not None:
-            kamera.last_send_more_norm_cnt = row[11]
+        if row[13] is not None:
+            kamera.last_send_more_norm_cnt = row[13]
         else:
             kamera.last_send_more_norm_cnt = -1
 
-        if row[12] is not None:
-            kamera.last_send_less_usl_dt = row[12]
+        if row[14] is not None:
+            kamera.last_send_less_usl_dt = row[14]
         else:
             kamera.last_send_less_usl_dt = datetime(1900, 1, 1)
 
-        if row[13] is not None:
-            kamera.last_send_less_usl_cnt = row[13]
+        if row[15] is not None:
+            kamera.last_send_less_usl_cnt = row[15]
         else:
             kamera.last_send_less_usl_cnt = -1
 
-        if row[14] is not None:
-            kamera.last_send_less_norm_dt = row[14]
+        if row[16] is not None:
+            kamera.last_send_less_norm_dt = row[16]
         else:
             kamera.last_send_less_norm_dt = datetime(1900, 1, 1)
 
-        if row[15] is not None:
-            kamera.last_send_less_norm_cnt = row[15]
+        if row[17] is not None:
+            kamera.last_send_less_norm_cnt = row[17]
         else:
             kamera.last_send_less_norm_cnt = -1
 
@@ -349,6 +362,16 @@ def usl_send_mess(spisok_kamer, konstants):
         # сообщение на выполнения условия превышения
         if kam.usl_send_more > 0 and kam.cnt_people > kam.usl_send_more and \
            (
+            (
+                kam.active_st == dt_time(hour=0, minute=0, second=0) and
+                kam.active_end == dt_time(hour=0, minute=0, second=0)
+            ) or
+            (
+                kam.active_st >= datetime.now().time() and
+                kam.active_end <= datetime.now().time()
+            )
+           ) and \
+           (
              kam.last_send_more_usl_dt == datetime(1900, 1, 1) or
              (datetime.now() - kam.last_send_more_usl_dt).total_seconds() >
              min_inrerval_sec or
@@ -359,6 +382,16 @@ def usl_send_mess(spisok_kamer, konstants):
             spisok_kamer[i].b_add_mess_usl_more = 1
         # сообщение на выполнения условия занижения
         if kam.usl_send_less > 0 and kam.cnt_people < kam.usl_send_less and \
+           (
+            (
+                kam.active_st == dt_time(hour=0, minute=0, second=0) and
+                kam.active_end == dt_time(hour=0, minute=0, second=0)
+            ) or
+            (
+                kam.active_st >= datetime.now().time() and
+                kam.active_end <= datetime.now().time()
+            )
+           ) and \
            (
              kam.last_send_less_usl_dt == datetime(1900, 1, 1) or
              (datetime.now() - kam.last_send_less_usl_dt).total_seconds() >=
@@ -372,6 +405,16 @@ def usl_send_mess(spisok_kamer, konstants):
         if kam.usl_send_more > 0 and kam.cnt_people <= kam.usl_norm_more and \
            kam.last_send_more_usl_dt > datetime(1900, 1, 1) and \
            (
+            (
+                kam.active_st == dt_time(hour=0, minute=0, second=0) and
+                kam.active_end == dt_time(hour=0, minute=0, second=0)
+            ) or
+            (
+                kam.active_st >= datetime.now().time() and
+                kam.active_end <= datetime.now().time()
+            )
+           ) and \
+           (
              kam.last_send_more_norm_dt == datetime(1900, 1, 1) or
              kam.last_send_more_norm_dt < kam.last_send_more_usl_dt
            ):
@@ -380,8 +423,18 @@ def usl_send_mess(spisok_kamer, konstants):
         if kam.usl_send_less > 0 and kam.cnt_people >= kam.usl_norm_less and \
            kam.last_send_less_usl_dt > datetime(1900, 1, 1) and \
            (
-             kam.last_send_less_norm_dt == datetime(1900, 1, 1) or
-             kam.last_send_less_norm_dt < kam.last_send_less_usl_dt
+            (
+                kam.active_st == dt_time(hour=0, minute=0, second=0) and
+                kam.active_end == dt_time(hour=0, minute=0, second=0)
+            ) or
+            (
+                kam.active_st >= datetime.now().time() and
+                kam.active_end <= datetime.now().time()
+            )
+           ) and \
+           (
+               kam.last_send_less_norm_dt == datetime(1900, 1, 1) or
+               kam.last_send_less_norm_dt < kam.last_send_less_usl_dt
            ):
             spisok_kamer[i].b_add_mess_usl_less_norm = 1
 
