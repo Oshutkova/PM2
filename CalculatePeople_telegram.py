@@ -101,7 +101,7 @@ def get_photos_kamer(bot, message):
               left join calc_people_camera_cnt_people t_photo on
                       t_photo.id = t_last_id.id_max
               """
-    if message.text != '*':
+    if message.text.lower() not in ['*', 'all', 'все', 'всё']:
         sql += f""" WHERE C.id = {message.text} """
     cur = conn.cursor()
     cur.execute(sql)
@@ -174,10 +174,10 @@ def get_user_text(message):
         sOut += 'sp - список об-тов наблюдения\n'
         sOut += '* - последние фото со всех объектов\n'
         sOut += 'id объекта (число) - информация по объекту'
-    elif message.text.lower() == 'sp':
+    elif message.text in ['sp', 'spisok', 'сп', 'список']:
         # выводим список объектов
         sOut = get_spisok_kamer()
-    elif message.text == '*':
+    elif message.text in ['*', 'all', 'все', 'всё']:
         # выводим полный список фото
         get_photos_kamer(bot, message)
         return
