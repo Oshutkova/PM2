@@ -174,10 +174,10 @@ def get_user_text(message):
         sOut += 'sp - список об-тов наблюдения\n'
         sOut += '* - последние фото со всех объектов\n'
         sOut += 'id объекта (число) - информация по объекту'
-    elif message.text in ['sp', 'spisok', 'сп', 'список']:
+    elif message.text.lower() in ['sp', 'spisok', 'сп', 'список']:
         # выводим список объектов
         sOut = get_spisok_kamer()
-    elif message.text in ['*', 'all', 'все', 'всё']:
+    elif message.text.lower() in ['*', 'all', 'все', 'всё']:
         # выводим полный список фото
         get_photos_kamer(bot, message)
         return
