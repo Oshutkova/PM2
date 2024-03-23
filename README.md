@@ -1,6 +1,6 @@
 # Распознание количества людей в помещении
 
-## Бизнес обоснование.
+## Бизнес обоснование
 
 В ряде случаев нам бывает необходимо оперативно реагировать на повышение или снижение численности людей в помещении.
 Например, рост числа граждан в очереди на получение госуслуги свидетельствует о необходимости увеличения числа сотрудников для обслуживания. Известно, что в ряде организаций (в том числе государственных) время обслуживания посетителей - важный параметр. 
@@ -21,10 +21,15 @@
 
 Для корректной работы должны быть установлены:
 
-pip install opencv-python
-pip install psycopg2-binary
-pip install requests
-pip install telebot
-pip install python-telegram-bot
+- pip install opencv-python
+- pip install psycopg2-binary
+- pip install requests
+- pip install telebot
+- pip install python-telegram-bot
+
+Используемые модели:
+
+- YOLOv3
+- pyTelegramBotAPI
 
 ## Разработчики:
