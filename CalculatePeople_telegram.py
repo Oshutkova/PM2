@@ -27,15 +27,20 @@ def insert_user_into_spisok(message):
                declare tg_username1 varchar;
                begin
                  id1:= null;
-                 select id, tg_username into id1, tg_username1 from tg_users where tg_id = '{message.from_user.id}';
+                 select id, tg_username into id1, tg_username1
+                 from tg_users where tg_id = '{message.from_user.id}';
 
                 if id1 is null then
                   insert into tg_users(tg_id, tg_username)
-                              values ({message.from_user.id}, '{message.from_user.username}');
+                              values ({message.from_user.id},
+                                      '{message.from_user.username}');
                 end if;
 
-                if id1 is not null and tg_username1 <> '{message.from_user.username}' then
-                     update tg_users set tg_username = '{message.from_user.username}' where id = id1;
+                if id1 is not null and tg_username1 <>
+                                    '{message.from_user.username}' then
+                     update tg_users set tg_username =
+                                     '{message.from_user.username}'
+                     where id = id1;
                 end if;
 
                 end $$;   """
@@ -86,12 +91,15 @@ def get_photos_kamer(bot, message):
         port=port_
         )
 
-    sql = """ select C.id, C.name, t_photo.cnt_people, t_photo.date_time, t_photo.folder_name || '/' || t_photo.file_name
+    sql = """ select C.id, C.name, t_photo.cnt_people, t_photo.date_time,
+                     t_photo.folder_name || '/' || t_photo.file_name
               from public.calc_people_camera C
               left join (select tc.id_calc_people_camera, max(id) id_max
                          from calc_people_camera_cnt_people tc
-                         group by tc.id_calc_people_camera) t_last_id on t_last_id.id_calc_people_camera = C.id
-              left join calc_people_camera_cnt_people t_photo on t_photo.id = t_last_id.id_max
+                         group by tc.id_calc_people_camera) t_last_id on
+                      t_last_id.id_calc_people_camera = C.id
+              left join calc_people_camera_cnt_people t_photo on
+                      t_photo.id = t_last_id.id_max
               """
     if message.text != '*':
         sql += f""" WHERE C.id = {message.text} """
